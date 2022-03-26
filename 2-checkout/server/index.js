@@ -33,16 +33,38 @@ app.post('/f1', (request, response) => {
   });
 });
 
+// Post request upon submission of f2
 app.post('/f2', (request, response) => {
   console.log(request.session_id);
   console.log(request.body);
-
-  // assume an entry with this session_id is already in the table...
-  db.query(`INSERT INTO responses (addr1, addr2, city, state, shipzip, phone) VALUES ('${request.body.addr1}', '${request.body.addr2}', '${request.body.city}', '${request.body.state}', ${request.body.shipzip}, '${request.body.phone}') WHERE session_id = '${request.session_id}'`, (err, results, fields) => {
+  // REMEMBER: You CANNOT use INSERT with WHERE
+  db.query(`UPDATE responses SET addr1 = '${request.body.addr1}', addr2 = '${request.body.addr2}', city = '${request.body.city}', state = '${request.body.state}', shipzip = ${parseInt(request.body.shipzip)}, phone = '${request.body.phone}' WHERE session_id = '${request.session_id}';`, (err, results, fields) => {
     response.sendStatus(201);
   });
-  db.query(`UPDATE responses SET addr1 = '${request.body.addr1}', addr2 = '${request.body.addr2}' WHERE session_id = '${request.session_id}';`)
 });
 
+// Post request upon submission of f3
+app.post('/f3', (request, response) => {
+  console.log(request.session_id);
+  console.log(request.body);
+  // TO DO: write the query for f3 // DONE
+  db.query(`UPDATE responses SET cctype= '${request.body.cctype}', ccnum='${request.body.ccnum}', ccexp='${request.body.ccexp}', cvv='${request.body.cvv}', billzip='${request.body.billzip}' WHERE session_id = '${request.session_id}';`, (err, results, fields) => {
+    response.sendStatus(201); // it is imperative that you send a 201 or the cycle is incomplete!
+  });
+});
+
+// Get request to fetch data from database based on session id
+app.get('/data', (request, response) => {
+  let session_id = request.session_id;
+  db.query(`SELECT * FROM responses WHERE session_id='${session_id}'`, (err, results, fields) => {
+    // decide what to do with the results array
+    if (results.length > 0) {
+      response.send(results);
+    } else {
+      response.send([]);
+    }
+  });
+
+});
 app.listen(process.env.PORT);
 console.log(`Listening at http://localhost:${process.env.PORT}`);

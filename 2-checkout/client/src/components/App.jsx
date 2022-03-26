@@ -1,6 +1,7 @@
 import React from "react";
 import axios from "axios";
 
+// Everything is consolidated in this single component, <App />
 class App extends React.Component {
   constructor(props){
     super(props);
@@ -21,6 +22,29 @@ class App extends React.Component {
       cvv: '',
       billzip: ''
     };
+  }
+
+  prevPage(event) {
+    event.preventDefault();
+    switch(this.state.pageToShow) {
+      case 'home':
+        this.setState({pageToShow: 'conf'});
+        break;
+      case 'f1':
+        this.setState({pageToShow: 'home'});
+        break;
+      case 'f2':
+        this.setState({pageToShow: 'f1'});
+        break;
+      case 'f3':
+        this.setState({pageToShow: 'f2'});
+        break;
+      case 'conf':
+        this.setState({pageToShow: 'f3'});
+        break;
+      default:
+        break;
+    }
   }
 
   nextPage(event) {
@@ -73,7 +97,17 @@ class App extends React.Component {
   }
   handleSubmitF3(event) {
     event.preventDefault();
-    this.nextPage(event);
+    axios.post('http://localhost:3000/f3', {
+      cctype: this.state.cctype,
+      ccnum: this.state.ccnum,
+      ccexp: this.state.ccexp,
+      cvv: this.state.cvv,
+      billzip: this.state.billzip
+    }).then( (data) => {
+      this.nextPage(event);
+    }).catch( (err) => {
+      console.log('some kind of error on F3');
+    });
   }
   handleSubmitConf(event) {
     event.preventDefault();
@@ -107,10 +141,50 @@ class App extends React.Component {
   handleChangePhone(event) {
     this.setState({phone: event.target.value});
   }
+  handleChangeCC(event) {
+    this.setState({cctype: event.target.value});
+  }
+
+  handleChangeCCnum(event) {
+    this.setState({ccnum: event.target.value});
+  }
+  handleChangeCCexp(event) {
+    this.setState({ccexp: event.target.value});
+  }
+  handleChangeCVV(event) {
+    this.setState({cvv: event.target.value});
+  }
+  handleChangeBillzip(event) {
+    this.setState({billzip: event.target.value});
+  }
 
 
   componentDidMount() {
-
+    axios.get('http://localhost:3000/data').then( (data) => {
+      console.log(data.data[0]); // confirm we're getting the data // DONE
+      const previousSession = data.data[0];
+      if (previousSession) {
+        console.log('Previous session detected!');
+        this.setState({
+          name: previousSession.name,
+          email: previousSession.email,
+          pw: previousSession.pw,
+          addr1: previousSession.addr1,
+          addr2: previousSession.addr2,
+          city: previousSession.city,
+          state: previousSession.state,
+          shipzip: previousSession.shipzip,
+          phone: previousSession.phone,
+          cctype: previousSession.cctype,
+          ccnum: previousSession.ccnum,
+          ccexp: previousSession.ccexp,
+          cvv: previousSession.cvv,
+          billzip: previousSession.billzip,
+        });
+      } else {
+        console.log('No previous session detected!');
+      }
+    });
   }
 
   render() {
@@ -169,17 +243,17 @@ class App extends React.Component {
           <form>
             <div id="credit-card">
               <label id="card-select">Credit Card Type</label>
-              <select name="card-select" id="card-select">
+              <select name="card-select" id="card-select" value={this.state.cctype} onChange={this.handleChangeCC.bind(this)}>
                 <option value="Visa">Visa</option>
                 <option value="Mastercard">Mastercard</option>
                 <option value="American Express">American Express</option>
                 <option value="Discover">Discover</option>
               </select>
             </div>
-            <input type="number" placeholder="Enter CC #"></input>
-            <input type="date" placeholder="Expiration Date"></input>
-            <input type="number" placeholder="Enter CVV"></input>
-            <input type="number" placeholder="Zip Code"></input>
+            <input type="number" placeholder="Enter CC #" value={this.state.ccnum} onChange={this.handleChangeCCnum.bind(this)}></input>
+            <input type="date" placeholder="Expiration Date" value={this.state.ccexp} onChange={this.handleChangeCCexp.bind(this)}></input>
+            <input type="number" placeholder="Enter CVV" value={this.state.cvv} onChange={this.handleChangeCVV.bind(this)}></input>
+            <input type="number" placeholder="Zip Code" value={this.state.billzip} onChange={this.handleChangeBillzip.bind(this)}></input>
             <input type="submit" value="Submit Payment Information and Proceed with Checkout" onClick={this.handleSubmitF3.bind(this)}></input>
           </form>
         </div>
@@ -189,12 +263,34 @@ class App extends React.Component {
           <p>
             Please confirm your order details below.
           </p>
-          <p>
-            Placeholder
-          </p>
+          <h3>Items to Purchase:</h3>
+          <ul>
+            <li>Qty: 1</li>
+            <li>Item Description: Hack Reactor Tuition</li>
+            <li>Price per Each: $18,000</li>
+            <li>Extended Price: $18,000</li>
+          </ul>
+          <h3>Payment Details:</h3>
+          <ul>
+            <li>Name: {this.state.name}</li>
+            <li>Email: {this.state.email}</li>
+            <li>Address Line 1: {this.state.addr1}</li>
+            <li>Address Line 2: {this.state.addr2}</li>
+            <li>City: {this.state.city}</li>
+            <li>State: {this.state.state}</li>
+            <li>Shipping Zip Code: {this.state.shipzip}</li>
+            <li>Phone Number: {this.state.phone}</li>
+            <li>Credit Card Type: {this.state.cctype}</li>
+            <li>Credit Card Number: {this.state.ccnum}</li>
+            <li>Credit Card Expiration Date: {this.state.ccexp}</li>
+            <li>CVV: {this.state.cvv}</li>
+            <li>Billing Zip Code: {this.state.billzip}</li>
+          </ul>
+
           <button onClick={this.handleSubmitConf.bind(this)}>Purchase Now</button>
         </div>
         <br></br>
+        <button onClick={this.prevPage.bind(this)}>Manual Back</button>
         <button onClick={this.nextPage.bind(this)}>Manual Next</button>
 
       </div>
