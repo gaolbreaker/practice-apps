@@ -53,6 +53,18 @@ const deleteEntry = function(deleteObject) {
 
 }
 
+const editEntry = function(editObject) {
+
+  return new Promise ( (resolve, reject) => {
+    Word.replaceOne({term: editObject.term},{term: editObject.newTerm, definition: editObject.newDefinition})
+      .then( (data) => {
+        resolve(data);
+      }).catch( (err) => {reject(err); console.log('database error thing')});
+
+  });
+
+}
+
 
 
 
@@ -60,6 +72,7 @@ module.exports.getWords = getWords;
 module.exports.addWord = addWord;
 module.exports.searchForTerm = searchForTerm;
 module.exports.deleteEntry = deleteEntry;
+module.exports.editEntry = editEntry;
 
 // 1. Use mongoose to establish a connection to MongoDB
 // 2. Set up any schema and models needed by the app

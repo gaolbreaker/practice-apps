@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const path = require("path");
-const { getWords, addWord, searchForTerm, deleteEntry } = require("./db.js"); // by default there was no connection from /server/index.js to /server/db.js !!!
+const { getWords, addWord, searchForTerm, deleteEntry, editEntry } = require("./db.js"); // by default there was no connection from /server/index.js to /server/db.js !!!
 
 const app = express();
 
@@ -46,6 +46,18 @@ app.delete('/delete', (req, res) => {
   deleteEntry(req.body)
     .then( (data) => res.send(data))
     .catch( (err) => res.sendStatus(209));
+
+});
+
+// Define route for updating a specific record
+//   the request body should contain three objects, term, newTerm, and new Definition
+app.put('/edit', (req, res) => {
+  let editObj = req.body;
+
+  editEntry(editObj)
+    .then( (data) => res.send(data))
+    .catch( (err) => res.sendStatus(209));
+
 
 });
 

@@ -8,7 +8,7 @@ import axios from 'axios';
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {wordsList: [{term: 'blank', definition: 'blank'}]};
+    this.state = {wordsList: []};
   }
 
   componentDidMount() {
